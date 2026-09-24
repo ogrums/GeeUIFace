@@ -1,0 +1,6 @@
+# Copy to local.properties (gitignored) to sign as the GeeUI system app.
+# Without these, debug/release APKs are unsigned.
+STORE_FILE=./letianpai.jks
+KEY_ALIAS=letianpai
+KEY_PASSWORD=
+STORE_PASSWORD=

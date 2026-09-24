@@ -180,7 +180,9 @@ git checkout android11-modernize
 ./gradlew :app:assembleDebug
 ```
 
-APK : `app/build/outputs/apk/debug/`. Signé avec le keystore du projet (`app/letianpai.jks`) — nécessaire pour une app système sur la ROM GeeUI.
+APK : `app/build/outputs/apk/debug/`.
+
+Signature système : copier [`local.properties.example`](local.properties.example) vers `local.properties` (gitignored) et renseigner `KEY_PASSWORD` / `STORE_PASSWORD`. Sans ça l’APK est non signé et ne remplacera pas l’app GeeUI d’origine. Ne **pas** committer les mots de passe.
 
 Sur le robot, installer en app système (même signature que le firmware) pour AIDL / permissions `WRITE_SETTINGS` / stockage.
 
