@@ -58,6 +58,10 @@ android {
     }
     buildFeatures {
         viewBinding true
+        aidl true
+    }
+    testOptions {
+        unitTests.returnDefaultValues = true
     }
 }
 
@@ -73,4 +77,6 @@ dependencies {
     implementation project(path: ':CommandLib')
     implementation project(path: ':GestureFactory')
     implementation project(path: ':Components')
+
+    testImplementation 'junit:junit:4.13.2'
 }
