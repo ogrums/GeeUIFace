@@ -16,7 +16,7 @@ GeeUIFace n’est pas un launcher. C’est l’écran « tête » :
 
 | Couche | Rôle |
 |---|---|
-| **MainActivity** | Lecture en boucle d’une expression (`assets/video/hxxxx.mp4`) en fullscreen, IJKPlayer + MediaCodec |
+| **MainActivity** | Lecture en boucle d’une expression (`assets/video/hxxxx.mp4`) en fullscreen, **Media3 ExoPlayer** |
 | **AutoService** | Machine à états des poses (mode robot, recherche de personnes, sommeil…) |
 | **ILetianpaiService** | Bus AIDL vers `com.renhejia.robot.letianpaiservice` (MCU, audio, TTS, speech, apps) |
 
@@ -41,7 +41,7 @@ Un `GestureData` combine en une pose :
   - callback AIDL `LtpExpressionCallback`
   - pose en cours dans AutoService
 - Écran always-on, barre de statut / navigation masquées.
-- Activités de test : `ExoplayerActivity`, `IJkplayerActivity` (non launcher).
+- Activité de debug : `ExoplayerActivity` (non exportée). Le player de prod est Media3 (`androidx.media3` 1.5.1), plus IJK 0.8.8 ni ExoPlayer 2.x.
 
 ### Modes robot
 
@@ -125,8 +125,7 @@ Sans ces services, l’app peut afficher une expression mais les poses MCU / son
 | `androidx.appcompat:appcompat` | 1.7.0 | `AppCompatActivity` |
 | `com.google.android.material:material` | 1.12.0 | Thème Material |
 | `androidx.constraintlayout:constraintlayout` | 2.2.1 | Layout |
-| `tv.danmaku.ijk.media:ijkplayer-java` + `ijkplayer-arm64` + `ijkplayer-x86_64` + `ijkplayer-exo` | 0.8.8 | Player expressions (chemin actuel) |
-| `com.google.android.exoplayer:exoplayer-core` / `exoplayer-ui` | 2.19.1 | Player alternatif (`ExoplayerActivity`) |
+| `androidx.media3:media3-exoplayer` / `media3-ui` | 1.5.1 | Lecture des expressions (`asset:///video/hxxxx.mp4`), boucle native |
 | `com.google.code.gson:gson` | 2.11.0 | JSON (faces, config cloud, gestures) |
 
 Projets locaux : `:CommandLib`, `:GestureFactory`, `:Components`.
@@ -192,9 +191,8 @@ Sur le robot, installer en app système (même signature que le firmware) pour A
 
 ```
 app/src/main/java/com/geeui/face/
-  MainActivity.kt              player IJK + bind AutoService
-  ExoplayerActivity.kt         variante ExoPlayer
-  IJkplayerActivity.kt         variante IJK standalone
+  MainActivity.kt              player Media3 + bind AutoService
+  ExoplayerActivity.kt         debug Media3 (non exportée)
   service/AutoService.kt       FSM poses + AIDL + ident
   gesture/                     exécution séquentielle des GestureData
   broadcast/                   Wi‑Fi / timer (peu utilisés par le flux principal)
