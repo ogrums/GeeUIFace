@@ -121,7 +121,7 @@ public class ImageBgsView extends RelativeLayout {
 //                            .load((String) msg.obj)
 //                            .centerCrop()
 //                            .into(bgImage);
-                    Picasso.with(mContext)
+                    Picasso.get()
                             .load((String) msg.obj)
                             .resize(480, 480)
                             .centerCrop()

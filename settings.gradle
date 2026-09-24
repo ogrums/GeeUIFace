@@ -11,6 +11,8 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven { url 'https://jitpack.io' }
+        // ijkplayer 0.8.8 n'est plus sur Maven Central ni JCenter.
+        maven { url 'https://maven.aliyun.com/repository/public' }
     }
 }
 rootProject.name = "GeeUIFace"

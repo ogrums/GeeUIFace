@@ -177,9 +177,12 @@ git clone https://github.com/ogrums/GeeUIFace.git
 cd GeeUIFace
 git checkout android11-modernize
 ./gradlew :app:assembleDebug
+./gradlew :CommandLib:testDebugUnitTest :app:testDebugUnitTest
 ```
 
 APK : `app/build/outputs/apk/debug/`.
+
+Les tests unitaires tournent sur la JVM (JUnit 4), sans émulateur. Ils verrouillent le JSON `PowerMotion` / oreilles / LED que GeeUIMcuService parse, le format legacy de `Motion`, le JSON d’identification, et le fait qu’une nouvelle pose annule la précédente sans tuer l’exécuteur.
 
 Signature système : copier [`local.properties.example`](local.properties.example) vers `local.properties` (gitignored) et renseigner `KEY_PASSWORD` / `STORE_PASSWORD`. Sans ça l’APK est non signé et ne remplacera pas l’app GeeUI d’origine. Ne **pas** committer les mots de passe.
 
