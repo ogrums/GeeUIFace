@@ -32,7 +32,10 @@ import com.renhejia.robot.commandlib.utils.SystemUtil
 import com.renhejia.robot.gesturefactory.manager.GestureCenter
 import com.renhejia.robot.gesturefactory.parser.GestureData
 import com.renhejia.robot.letianpaiservice.ILetianpaiService
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import okhttp3.Call
 import okhttp3.Callback
@@ -48,6 +51,8 @@ class AutoService : Service() {
     private var iLetianpaiService: ILetianpaiService? = null
     private val gson: Gson = Gson()
     private var isServiceDestroy = false
+    private val serviceJob = SupervisorJob()
+    private val serviceScope = CoroutineScope(serviceJob + Dispatchers.IO)
     private val mHour = -1
     private val mMinute = 0
     private var handler: ChangeGestureHandler? = null
@@ -168,7 +173,7 @@ class AutoService : Service() {
         }
 
     private fun getRemoteStrollGesture() {
-        GlobalScope.launch {
+        serviceScope.launch {
             GeeUiNetManager.get(this@AutoService,
                 "/robot_api/v1/common/getConfig?config_key=remote_stroll",
                 object : Callback {
@@ -380,6 +385,7 @@ class AutoService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         isServiceDestroy = true
+        serviceScope.cancel()
         handler?.removeCallbacksAndMessages(null)
         handler = null
         closeFaceIdent()
@@ -397,7 +403,7 @@ class AutoService : Service() {
         LogUtils.logd("AutoService", "onDestroy: ")
     }
 
-    private inner class ChangeGestureHandler(context: Context) : Handler() {
+    private inner class ChangeGestureHandler(context: Context) : Handler(Looper.getMainLooper()) {
         private val context: WeakReference<Context>
 
         init {
@@ -733,15 +739,18 @@ class AutoService : Service() {
         GestureDataThreadExecutor.getInstance().execute {
             LogUtils.logd("AutoService", "run start: taskId:$taskId")
             for (gestureData in list) {
+                if (Thread.currentThread().isInterrupted) {
+                    LogUtils.logd("AutoService", "run aborted: taskId:$taskId")
+                    return@execute
+                }
                 responseGestureData(gestureData, iLetianpaiService)
                 try {
-                    if (gestureData.interval == 0L) {
-                        Thread.sleep(2000)
-                    } else {
-                        Thread.sleep(gestureData.interval)
-                    }
+                    val wait = if (gestureData.interval == 0L) 2000L else gestureData.interval
+                    Thread.sleep(wait)
                 } catch (e: InterruptedException) {
-                    throw RuntimeException(e)
+                    Thread.currentThread().interrupt()
+                    LogUtils.logd("AutoService", "run interrupted: taskId:$taskId")
+                    return@execute
                 }
             }
             LogUtils.logd("AutoService", "run end: taskId:$taskId")

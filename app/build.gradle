@@ -3,6 +3,12 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
+def localProps = new Properties()
+def localFile = rootProject.file('local.properties')
+if (localFile.exists()) {
+    localFile.withInputStream { localProps.load(it) }
+}
+
 android {
     namespace 'com.geeui.face'
     compileSdk 36
@@ -13,30 +19,32 @@ android {
         targetSdk 36
         versionCode 202402161
         versionName "1.1."+versionCode
-        viewBinding {
-            enabled = true
-        }
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     signingConfigs {
-
-        config {
-            storeFile file('./letianpai.jks')
-            keyAlias 'letianpai'
-            keyPassword 'letianpai0801'
-            storePassword 'letianpai0801'
+        if (localProps['STORE_PASSWORD'] && localProps['KEY_PASSWORD']) {
+            config {
+                storeFile file(localProps['STORE_FILE'] ?: './letianpai.jks')
+                keyAlias localProps['KEY_ALIAS'] ?: 'letianpai'
+                keyPassword localProps['KEY_PASSWORD']
+                storePassword localProps['STORE_PASSWORD']
+            }
         }
     }
 
     buildTypes {
         debug {
-            signingConfig signingConfigs.config
+            if (signingConfigs.findByName('config')) {
+                signingConfig signingConfigs.config
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 
         }
         release {
-            signingConfig signingConfigs.config
+            if (signingConfigs.findByName('config')) {
+                signingConfig signingConfigs.config
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -47,6 +55,9 @@ android {
     }
     kotlinOptions {
         jvmTarget = '17'
+    }
+    buildFeatures {
+        viewBinding true
     }
 }
 
