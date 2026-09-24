@@ -1,0 +1,61 @@
+//apply plugin: 'com.android.library'
+plugins {
+    id 'com.android.library'
+}
+//apply plugin: 'com.github.dcendents.android-maven'
+group='com.github.freyskill'
+android {
+    namespace 'top.keepempty.sph.library'
+    compileSdk 36
+
+
+    defaultConfig {
+        minSdk 30
+        targetSdk 36
+        versionCode 1
+        versionName "1.0"
+        multiDexEnabled true
+//        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        externalNativeBuild {
+            cmake {
+                cppFlags ""
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+//    externalNativeBuild {
+//        cmake {
+//            path "src/main/cpp/CMakeLists.txt"
+//        }
+//    }
+
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    packaging {
+        resources {
+            excludes += [
+                    'META-INF/DEPENDENCIES',
+                    'META-INF/NOTICE',
+                    'META-INF/NOTICE.txt',
+                    'META-INF/LICENSE',
+                    'META-INF/LICENSE.txt'
+            ]
+        }
+    }
+//    buildToolsVersion '26.0.2'
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+}
