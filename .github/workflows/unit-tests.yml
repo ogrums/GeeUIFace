@@ -20,7 +20,8 @@ jobs:
           distribution: temurin
           java-version: 17
       - uses: android-actions/setup-android@v3
-      - name: SDK platform
-        run: sdkmanager "platforms;android-36"
+        with:
+          # "tools" was removed from sdkmanager; the action default still asks for it.
+          packages: 'platforms;android-36 platform-tools build-tools;35.0.0'
       - name: Host unit tests
         run: ./gradlew :CommandLib:testDebugUnitTest :app:testDebugUnitTest --stacktrace
