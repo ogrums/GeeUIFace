@@ -10,6 +10,8 @@ import android.os.IBinder
 import android.util.Log
 import android.view.SurfaceHolder
 import android.view.View
+import android.view.WindowInsets
+import android.view.WindowInsetsController
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import com.geeui.face.databinding.ActivityMainBinding
@@ -50,12 +52,9 @@ class MainActivity : AppCompatActivity(),
     override fun onCreate(savedInstanceState: Bundle?) {
         LogUtils.logd("MainActivity", "onCreate: " + System.currentTimeMillis());
         super.onCreate(savedInstanceState)
-        // 隐藏状态栏（通知栏）
-        window.setFlags(
-            WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN
-        )
-        window.decorView.systemUiVisibility =
-            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        window.setDecorFitsSystemWindows(false)
+        hideSystemBars()
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -119,24 +118,18 @@ class MainActivity : AppCompatActivity(),
 
     override fun onResume() {
         super.onResume()
-        // 隐藏导航栏
-        hideNavigationBar()
-        binding.root.keepScreenOn = true
+        hideSystemBars()
         if (isPlaying) {
             mediaPlayer?.start()
         }
     }
 
 
-    private fun hideNavigationBar() {
-        val decorView = window.decorView
-        decorView.setOnSystemUiVisibilityChangeListener { visibility: Int ->
-            if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                // 当导航栏可见时，隐藏导航栏
-                window.decorView.systemUiVisibility =
-                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-            }
-        }
+    private fun hideSystemBars() {
+        val controller = window.insetsController ?: return
+        controller.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+        controller.systemBarsBehavior =
+            WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
     }
 
     private fun bindDispatchService() {
