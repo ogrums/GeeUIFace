@@ -397,7 +397,7 @@ class AutoService : Service() {
         LogUtils.logd("AutoService", "onDestroy: ")
     }
 
-    private inner class ChangeGestureHandler(context: Context) : Handler() {
+    private inner class ChangeGestureHandler(context: Context) : Handler(Looper.getMainLooper()) {
         private val context: WeakReference<Context>
 
         init {
@@ -733,15 +733,18 @@ class AutoService : Service() {
         GestureDataThreadExecutor.getInstance().execute {
             LogUtils.logd("AutoService", "run start: taskId:$taskId")
             for (gestureData in list) {
+                if (Thread.currentThread().isInterrupted) {
+                    LogUtils.logd("AutoService", "run aborted: taskId:$taskId")
+                    return@execute
+                }
                 responseGestureData(gestureData, iLetianpaiService)
                 try {
-                    if (gestureData.interval == 0L) {
-                        Thread.sleep(2000)
-                    } else {
-                        Thread.sleep(gestureData.interval)
-                    }
+                    val wait = if (gestureData.interval == 0L) 2000L else gestureData.interval
+                    Thread.sleep(wait)
                 } catch (e: InterruptedException) {
-                    throw RuntimeException(e)
+                    Thread.currentThread().interrupt()
+                    LogUtils.logd("AutoService", "run interrupted: taskId:$taskId")
+                    return@execute
                 }
             }
             LogUtils.logd("AutoService", "run end: taskId:$taskId")

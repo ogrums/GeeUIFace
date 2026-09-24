@@ -210,9 +210,15 @@ class MainActivity : AppCompatActivity(),
 
                 }
             }
-            it.setOnCompletionListener {
-                Thread.sleep(100)
-                it?.start()
+            it.setOnCompletionListener { mp ->
+                // Do not sleep on the player thread — it stalls IJK and can ANR.
+                if (surfaceAvailable && mediaPlayer === mp) {
+                    binding.playerView.postDelayed({
+                        if (surfaceAvailable && mediaPlayer === mp) {
+                            mediaPlayer?.start()
+                        }
+                    }, 100)
+                }
             }
             it.setOnErrorListener { mp, what, extra ->
                 LogUtils.logd(
