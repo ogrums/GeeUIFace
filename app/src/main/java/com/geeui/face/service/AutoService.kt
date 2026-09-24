@@ -32,7 +32,10 @@ import com.renhejia.robot.commandlib.utils.SystemUtil
 import com.renhejia.robot.gesturefactory.manager.GestureCenter
 import com.renhejia.robot.gesturefactory.parser.GestureData
 import com.renhejia.robot.letianpaiservice.ILetianpaiService
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import okhttp3.Call
 import okhttp3.Callback
@@ -48,6 +51,8 @@ class AutoService : Service() {
     private var iLetianpaiService: ILetianpaiService? = null
     private val gson: Gson = Gson()
     private var isServiceDestroy = false
+    private val serviceJob = SupervisorJob()
+    private val serviceScope = CoroutineScope(serviceJob + Dispatchers.IO)
     private val mHour = -1
     private val mMinute = 0
     private var handler: ChangeGestureHandler? = null
@@ -168,7 +173,7 @@ class AutoService : Service() {
         }
 
     private fun getRemoteStrollGesture() {
-        GlobalScope.launch {
+        serviceScope.launch {
             GeeUiNetManager.get(this@AutoService,
                 "/robot_api/v1/common/getConfig?config_key=remote_stroll",
                 object : Callback {
@@ -380,6 +385,7 @@ class AutoService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         isServiceDestroy = true
+        serviceScope.cancel()
         handler?.removeCallbacksAndMessages(null)
         handler = null
         closeFaceIdent()
